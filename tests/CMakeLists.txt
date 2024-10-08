@@ -19,4 +19,9 @@ add_executable(parser_test parser_test.cpp)
 target_link_libraries(parser_test PRIVATE Catch2::Catch2WithMain)
 target_link_libraries(parser_test PRIVATE cDBParser)
 
+add_executable(tokenizer_test tokenizer_test.cpp)
+target_link_libraries(tokenizer_test PRIVATE Catch2::Catch2WithMain)
+target_link_libraries(tokenizer_test PRIVATE cDBParser)
+
 add_test(NAME parser_test COMMAND parser_test)
+add_test(NAME tokenizer_test COMMAND tokenizer_test)

@@ -156,6 +156,7 @@ void Tokenizer::Lex() {
         Token newToken = Token(TokenType::COMMENT_MULTI, val, getPos(i));
         // std::cout << "Lexed token: " << newToken.ToString() << "\n";
         tokens.push_back(newToken);
+        i += 2;
 
         continue;
       } else {

@@ -6,3 +6,4 @@ cmake ..
 make
 
 ./tests/parser_test
+./tests/tokenizer_test
