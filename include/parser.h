@@ -13,7 +13,6 @@ private:
 public:
   Parser(std::vector<tokenizer::Token> tokens);
   void Parse();
-  ProgramNode GetRoot();
 };
 
 } // namespace parser
