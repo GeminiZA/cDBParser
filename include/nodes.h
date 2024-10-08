@@ -14,6 +14,51 @@ public:
   }
 };
 
+enum class ExpressionType {
+  TABLE_REF,
+};
+
+class Expression : public ASTNode {
+public:
+  ExpressionType type;
+};
+
+class TableRefExpression : public Expression {
+public:
+}
+
+class ColumnRef {
+public:
+  std::string name;
+  ColumnRef(std::string name) : name(name) {};
+};
+
+enum class ClauseType {
+  SELECT,
+  FROM,
+  WHERE,
+};
+
+class ClauseNode : public ASTNode {
+public:
+  ClauseType type;
+  ClauseNode(ClauseType type) : type(type) {};
+};
+
+class SelectClauseNode : public ClauseNode {
+public:
+  SelectClauseNode() : ClauseNode(ClauseType::SELECT) {};
+  std::vector<ColumnRef> columns;
+  void AddColumn(std::string name) { columns.push_back(ColumnRef(name)); }
+  std::vector<ColumnRef> GetColumns() { return columns; }
+};
+
+class FromClauseNode : public ClauseNode {
+public:
+  FromClauseNode(Expression expr) : ClauseNode(ClauseType::FROM), expr(expr) {};
+  Expression expr;
+}
+
 enum class StatementType {
   CREATE_TABLE,
   // CREATE_VIEW,
@@ -46,11 +91,13 @@ enum class StatementType {
 
 class StatementNode : ASTNode {
 public:
+  std::vector<ClauseNode> clauses;
   StatementType type;
 };
 
 class SelectStatementNode : StatementNode {
 public:
+  SelectStatementNode() { type = StatementType::SELECT; }
   void print(std::ostream &os) const override { os << "SELECT_STATEMENT"; }
 };
 
