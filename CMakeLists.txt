@@ -9,8 +9,10 @@ include_directories(include)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 file(GLOB SOURCES "src/*cpp")
+file(GLOB PARSER_SOURCES "src/parser/*cpp")
+file(GLOB TOKENIZER_SOURCES "src/tokenizer/*cpp")
 
-add_library(cDBParser ${SOURCES})
+add_library(cDBParser ${SOURCES} ${PARSER_SOURCES} ${TOKENIZER_SOURCES})
 
 add_subdirectory(tests)
 
