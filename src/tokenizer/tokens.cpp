@@ -25,6 +25,16 @@ std::string Token::TypeString() const {
     return "KEYWORD_CREATE";
   case tokenizer::TokenType::KEYWORD_DROP:
     return "KEYWORD_DROP";
+  case tokenizer::TokenType::KEYWORD_GROUP:
+    return "KEYWORD_GROUP";
+  case tokenizer::TokenType::KEYWORD_BY:
+    return "KEYWORD_BY";
+  case tokenizer::TokenType::KEYWORD_ORDER:
+    return "KEYWORD_ORDER";
+  case tokenizer::TokenType::KEYWORD_LIMIT:
+    return "KEYWORD_LIMIT";
+  case tokenizer::TokenType::KEYWORD_DELETE:
+    return "KEYWORD_DELETE";
   case tokenizer::TokenType::KEYWORD_ALTER:
     return "KEYWORD_ALTER";
   case tokenizer::TokenType::KEYWORD_FROM:
@@ -41,6 +51,8 @@ std::string Token::TypeString() const {
     return "KEYWORD_NULL";
   case tokenizer::TokenType::KEYWORD_TABLE:
     return "KEYWORD_TABLE";
+  case tokenizer::TokenType::KEYWORD_DATABASE:
+    return "KEYWORD_DATABASE";
   case tokenizer::TokenType::KEYWORD_COLUMN:
     return "KEYWORD_COLUMN";
   case tokenizer::TokenType::KEYWORD_PRIMARY:

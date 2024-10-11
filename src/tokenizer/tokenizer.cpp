@@ -311,6 +311,31 @@ void Tokenizer::Lex() {
         // std::cout << "Lexed token: " << newToken.ToString() << "\n";
         tokens.push_back(newToken);
         continue;
+      } else if (compWord(val, "GROUP")) {
+        Token newToken = Token(TokenType::KEYWORD_GROUP, getPos(start));
+        // std::cout << "Lexed token: " << newToken.ToString() << "\n";
+        tokens.push_back(newToken);
+        continue;
+      } else if (compWord(val, "BY")) {
+        Token newToken = Token(TokenType::KEYWORD_BY, getPos(start));
+        // std::cout << "Lexed token: " << newToken.ToString() << "\n";
+        tokens.push_back(newToken);
+        continue;
+      } else if (compWord(val, "ORDER")) {
+        Token newToken = Token(TokenType::KEYWORD_ORDER, getPos(start));
+        // std::cout << "Lexed token: " << newToken.ToString() << "\n";
+        tokens.push_back(newToken);
+        continue;
+      } else if (compWord(val, "LIMIT")) {
+        Token newToken = Token(TokenType::KEYWORD_LIMIT, getPos(start));
+        // std::cout << "Lexed token: " << newToken.ToString() << "\n";
+        tokens.push_back(newToken);
+        continue;
+      } else if (compWord(val, "DELETE")) {
+        Token newToken = Token(TokenType::KEYWORD_DELETE, getPos(start));
+        // std::cout << "Lexed token: " << newToken.ToString() << "\n";
+        tokens.push_back(newToken);
+        continue;
       } else if (compWord(val, "ALTER")) {
         Token newToken = Token(TokenType::KEYWORD_ALTER, getPos(start));
         // std::cout << "Lexed token: " << newToken.ToString() << "\n";
