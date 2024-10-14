@@ -22,6 +22,24 @@ private:
   ASTNode ParseColumnDefList(size_t &i);
   ASTNode ParseValueList(size_t &i);
   ASTNode ParseAssignmentList(size_t &i);
+  ASTNode ParseAlterActionList(size_t &i);
+  ASTNode ParseColumnRef(size_t &i);
+  ASTNode ParseTableRef(size_t &i);
+  ASTNode ParseOrderList(size_t &i);
+  ASTNode ParseColumnDef(size_t &i);
+  ASTNode ParseValue(size_t &i);
+  ASTNode ParseAssignment(size_t &i);
+  ASTNode ParseAlterAction(size_t &i);
+  ASTNode ParseOrderItem(size_t &i);
+  ASTNode ParseColumnConstraintsList(size_t &i);
+  ASTNode ParseTableElementsList(size_t &i);
+  ASTNode ParseAddDefinition(size_t &i);
+  ASTNode ParseDataType(size_t &i);
+  ASTNode ParseLogicalExpression(size_t &i);
+  ASTNode ParseComparisionExpression(size_t &i);
+  ASTNode ParseAdditiveExpression(size_t &i);
+  ASTNode ParseMultiplicativeExpression(size_t &i);
+  ASTNode ParseUnaryExpression(size_t &i);
 
 public:
   Parser(std::vector<tokenizer::Token> tokens);

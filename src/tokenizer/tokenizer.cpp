@@ -51,7 +51,7 @@ std::string Tokenizer::getPosStr(size_t index) const {
          ")";
 }
 
-const std::string punc = " ,();\n+-*/><=!";
+const std::string punc = " ,();\n+-*/><=!.";
 
 bool Tokenizer::isPunc(char cur, std::string punc) {
   size_t i = punc.find(cur);
@@ -86,6 +86,11 @@ void Tokenizer::Lex() {
     if (raw[i] == ',') {
       Token newToken = Token(TokenType::PUNC_COMMA, getPos(i));
       // std::cout << "Lexed token: " << newToken.ToString() << "\n";
+      tokens.push_back(newToken);
+      i++;
+      continue;
+    } else if (raw[i] == '.') {
+      Token newToken = Token(TokenType::PUNC_PERIOD, getPos(i));
       tokens.push_back(newToken);
       i++;
       continue;
@@ -291,6 +296,11 @@ void Tokenizer::Lex() {
         tokens.push_back(newToken);
         continue;
         ;
+      } else if (compWord(val, "AS")) {
+        Token newToken = Token(TokenType::KEYWORD_AS, getPos(start));
+        // std::cout << "Lexed token: " << newToken.ToString() << "\n";
+        tokens.push_back(newToken);
+        continue;
       } else if (compWord(val, "INSERT")) {
         Token newToken = Token(TokenType::KEYWORD_INSERT, getPos(start));
         // std::cout << "Lexed token: " << newToken.ToString() << "\n";
@@ -338,6 +348,26 @@ void Tokenizer::Lex() {
         continue;
       } else if (compWord(val, "ALTER")) {
         Token newToken = Token(TokenType::KEYWORD_ALTER, getPos(start));
+        // std::cout << "Lexed token: " << newToken.ToString() << "\n";
+        tokens.push_back(newToken);
+        continue;
+      } else if (compWord(val, "RENAME")) {
+        Token newToken = Token(TokenType::KEYWORD_RENAME, getPos(start));
+        // std::cout << "Lexed token: " << newToken.ToString() << "\n";
+        tokens.push_back(newToken);
+        continue;
+      } else if (compWord(val, "ADD")) {
+        Token newToken = Token(TokenType::KEYWORD_ADD, getPos(start));
+        // std::cout << "Lexed token: " << newToken.ToString() << "\n";
+        tokens.push_back(newToken);
+        continue;
+      } else if (compWord(val, "TO")) {
+        Token newToken = Token(TokenType::KEYWORD_TO, getPos(start));
+        // std::cout << "Lexed token: " << newToken.ToString() << "\n";
+        tokens.push_back(newToken);
+        continue;
+      } else if (compWord(val, "MODIFY")) {
+        Token newToken = Token(TokenType::KEYWORD_MODIFY, getPos(start));
         // std::cout << "Lexed token: " << newToken.ToString() << "\n";
         tokens.push_back(newToken);
         continue;
