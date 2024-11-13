@@ -2,9 +2,6 @@
 #include "tokens.h"
 #include <algorithm>
 #include <cctype>
-#include <exception>
-#include <iostream>
-#include <iterator>
 #include <stdexcept>
 #include <string>
 #include <strings.h>
@@ -301,6 +298,16 @@ void Tokenizer::Lex() {
         // std::cout << "Lexed token: " << newToken.ToString() << "\n";
         tokens.push_back(newToken);
         continue;
+      } else if (compWord(val, "ASC")) {
+        Token newToken = Token(TokenType::KEYWORD_ASC, getPos(start));
+        // std::cout << "Lexed token: " << newToken.ToString() << "\n";
+        tokens.push_back(newToken);
+        continue;
+      } else if (compWord(val, "DESC")) {
+        Token newToken = Token(TokenType::KEYWORD_DESC, getPos(start));
+        // std::cout << "Lexed token: " << newToken.ToString() << "\n";
+        tokens.push_back(newToken);
+        continue;
       } else if (compWord(val, "INSERT")) {
         Token newToken = Token(TokenType::KEYWORD_INSERT, getPos(start));
         // std::cout << "Lexed token: " << newToken.ToString() << "\n";
@@ -408,6 +415,21 @@ void Tokenizer::Lex() {
         continue;
       } else if (compWord(val, "COLUMN")) {
         Token newToken = Token(TokenType::KEYWORD_COLUMN, getPos(start));
+        // std::cout << "Lexed token: " << newToken.ToString() << "\n";
+        tokens.push_back(newToken);
+        continue;
+      } else if (compWord(val, "CONSTRAINT")) {
+        Token newToken = Token(TokenType::KEYWORD_CONSTRAINT, getPos(start));
+        // std::cout << "Lexed token: " << newToken.ToString() << "\n";
+        tokens.push_back(newToken);
+        continue;
+      } else if (compWord(val, "REFERENCES")) {
+        Token newToken = Token(TokenType::KEYWORD_REFERENCES, getPos(start));
+        // std::cout << "Lexed token: " << newToken.ToString() << "\n";
+        tokens.push_back(newToken);
+        continue;
+      } else if (compWord(val, "DEFAULT")) {
+        Token newToken = Token(TokenType::KEYWORD_DEFAULT, getPos(start));
         // std::cout << "Lexed token: " << newToken.ToString() << "\n";
         tokens.push_back(newToken);
         continue;

@@ -391,11 +391,11 @@ ASTNode Parser::ParseTableRef(size_t &i) {
 }
 
 ASTNode Parser::ParseLogicalExpression(size_t &i) {
-  ASTNode cond(NodeType::BINARY_OPERATION);
-  ASTNode pre = ParseComparisionExpression(i);
-  cond.children.push_back(pre);
+  ASTNode pre = ParseComparisonExpression(i);
   switch (tokens[i].type) {
   case tokenizer::TokenType::OP_AND: {
+    ASTNode cond(NodeType::BINARY_OPERATION);
+    cond.children.push_back(pre);
     ASTNode op(NodeType::BIN_OP_AND);
     cond.children.push_back(op);
     i++;
@@ -404,6 +404,8 @@ ASTNode Parser::ParseLogicalExpression(size_t &i) {
     return cond;
   }
   case tokenizer::TokenType::OP_OR: {
+    ASTNode cond(NodeType::BINARY_OPERATION);
+    cond.children.push_back(pre);
     ASTNode op(NodeType::BIN_OP_OR);
     cond.children.push_back(op);
     i++;
@@ -412,7 +414,7 @@ ASTNode Parser::ParseLogicalExpression(size_t &i) {
     return cond;
   }
   default:
-    return cond;
+    return pre;
   }
 }
 
@@ -546,6 +548,396 @@ ASTNode Parser::ParseAlterAction(size_t &i) {
   }
 }
 
-ASTNode Parser::ParseOrderItem(size_t &i) {}
+ASTNode Parser::ParseOrderItem(size_t &i) {
+  ASTNode orderItem(NodeType::ORDER_ITEM);
+  ASTNode ref = ParseColumnRef(i);
+  orderItem.children.push_back(ref);
+  switch (tokens[i].type) {
+  case tokenizer::TokenType::KEYWORD_ASC: {
+    orderItem.children.push_back(ASTNode(NodeType::ORDER_ASC));
+    break;
+  }
+  case tokenizer::TokenType::KEYWORD_DESC: {
+    orderItem.children.push_back(ASTNode(NodeType::ORDER_DESC));
+    break;
+  }
+  default:
+    throw UnexpectedToken(tokens[i]);
+  }
+  i++;
+  return orderItem;
+}
+
+ASTNode Parser::ParseColumnConstraintsList(size_t &i) {
+  ASTNode list(NodeType::COLUMN_CONSTRAINT_LIST);
+  ASTNode constraint = ParseColumnConstraint(i);
+  list.children.push_back(constraint);
+  while (tokens[i].type == tokenizer::TokenType::PUNC_COMMA) {
+    i++;
+    ASTNode constraint = ParseColumnConstraint(i);
+    list.children.push_back(constraint);
+  }
+  return list;
+}
+
+ASTNode Parser::ParseTableElementsList(size_t &i) {
+  ASTNode list(NodeType::TABLE_ELEMENT_LIST);
+  ASTNode element = ParseTableElement(i);
+  list.children.push_back(element);
+  while (tokens[i].type == tokenizer::TokenType::PUNC_COMMA) {
+    i++;
+    ASTNode element = ParseTableElement(i);
+    list.children.push_back(element);
+  }
+  return list;
+}
+
+ASTNode Parser::ParseAddDefinition(size_t &i) {
+  ASTNode def(NodeType::ADD_DEFINITION);
+  switch (tokens[i].type) {
+  case tokenizer::TokenType::KEYWORD_COLUMN: {
+    i++;
+    if (tokens[i].type != tokenizer::TokenType::IDENTIFIER)
+      throw UnexpectedToken(tokens[i]);
+    def.children.push_back(ASTNode(NodeType::IDENTIFIER, tokens[i].value));
+    i++;
+    ASTNode type = ParseDataType(i);
+    def.children.push_back(type);
+  }
+  case tokenizer::TokenType::KEYWORD_CONSTRAINT: {
+    ASTNode constraint = ParseConstraintDef(i);
+    return constraint;
+  }
+  default:
+    throw UnexpectedToken(tokens[i]);
+  }
+  return def;
+}
+
+ASTNode Parser::ParseConstraintDef(size_t &i) {
+  if (tokens[i].type != tokenizer::TokenType::KEYWORD_CONSTRAINT)
+    throw UnexpectedToken(tokens[i]);
+  ASTNode constraintDef(NodeType::CONSTRAINT);
+  i++;
+  if (tokens[i].type != tokenizer::TokenType::IDENTIFIER)
+    throw UnexpectedToken(tokens[i]);
+  ASTNode constraintName(NodeType::CONSTRAINT_NAME, tokens[i].value);
+  constraintDef.children.push_back(constraintName);
+  i++;
+  ASTNode constraintType = ParseConstraintType(i);
+  constraintDef.children.push_back(constraintType);
+  return constraintDef;
+}
+
+ASTNode Parser::ParseDataType(size_t &i) {
+  switch (tokens[i].type) {
+  case tokenizer::TokenType::TYPE_INT: {
+    i++;
+    return ASTNode(NodeType::TYPE_INT);
+  }
+  case tokenizer::TokenType::TYPE_FLOAT: {
+    i++;
+    return ASTNode(NodeType::TYPE_FLOAT);
+  }
+  case tokenizer::TokenType::TYPE_TEXT: {
+    i++;
+    return ASTNode(NodeType::TYPE_TEXT);
+  }
+  case tokenizer::TokenType::TYPE_BOOLEAN: {
+    i++;
+    return ASTNode(NodeType::TYPE_BOOLEAN);
+  }
+  case tokenizer::TokenType::TYPE_BLOB: {
+    i++;
+    return ASTNode(NodeType::TYPE_BLOB);
+  }
+  case tokenizer::TokenType::TYPE_VARCHAR: {
+    i++;
+    if (tokens[i].type != tokenizer::TokenType::PUNC_PAREN_OPEN)
+      throw UnexpectedToken(tokens[i]);
+    i++;
+    if (tokens[i].type != tokenizer::TokenType::LITERAL_INT)
+      throw UnexpectedToken(tokens[i]);
+    ASTNode size(NodeType::LITERAL_INT, tokens[i].value);
+    i++;
+    if (tokens[i].type != tokenizer::TokenType::PUNC_PAREN_CLOSE)
+      throw UnexpectedToken(tokens[i]);
+    i++;
+    ASTNode varchar(NodeType::TYPE_VARCHAR);
+    varchar.children.push_back(size);
+    return varchar;
+  }
+  default:
+    throw UnexpectedToken(tokens[i]);
+  }
+}
+
+ASTNode Parser::ParseComparisonExpression(size_t &i) {
+  ASTNode pre = ParseAdditiveExpression(i);
+  switch (tokens[i].type) {
+  case tokenizer::TokenType::OP_EQUAL: {
+    ASTNode compexp(NodeType::BINARY_OPERATION);
+    compexp.children.push_back(pre);
+    i++;
+    compexp.children.push_back(NodeType::BIN_OP_EQUAL);
+    ASTNode post = ParseAdditiveExpression(i);
+    compexp.children.push_back(post);
+  }
+  case tokenizer::TokenType::OP_NOT_EQUAL: {
+    ASTNode compexp(NodeType::BINARY_OPERATION);
+    compexp.children.push_back(pre);
+    i++;
+    compexp.children.push_back(NodeType::BIN_OP_NOT_EQUAL);
+    ASTNode post = ParseAdditiveExpression(i);
+    compexp.children.push_back(post);
+  }
+  case tokenizer::TokenType::OP_LESS: {
+    ASTNode compexp(NodeType::BINARY_OPERATION);
+    compexp.children.push_back(pre);
+    i++;
+    compexp.children.push_back(NodeType::BIN_OP_LESS);
+    ASTNode post = ParseAdditiveExpression(i);
+    compexp.children.push_back(post);
+  }
+  case tokenizer::TokenType::OP_LESS_EQUAL: {
+    ASTNode compexp(NodeType::BINARY_OPERATION);
+    compexp.children.push_back(pre);
+    i++;
+    compexp.children.push_back(NodeType::BIN_OP_LESS_EQUAL);
+    ASTNode post = ParseAdditiveExpression(i);
+    compexp.children.push_back(post);
+  }
+  case tokenizer::TokenType::OP_GREATER: {
+    ASTNode compexp(NodeType::BINARY_OPERATION);
+    compexp.children.push_back(pre);
+    i++;
+    compexp.children.push_back(NodeType::BIN_OP_GREATER);
+    ASTNode post = ParseAdditiveExpression(i);
+    compexp.children.push_back(post);
+  }
+  case tokenizer::TokenType::OP_GREATER_EQUAL: {
+    ASTNode compexp(NodeType::BINARY_OPERATION);
+    compexp.children.push_back(pre);
+    i++;
+    compexp.children.push_back(NodeType::BIN_OP_GREATER_EQUAL);
+    ASTNode post = ParseAdditiveExpression(i);
+    compexp.children.push_back(post);
+  }
+  default:
+    return pre;
+  }
+}
+
+ASTNode Parser::ParseAdditiveExpression(size_t &i) {
+  ASTNode pre = ParseMultiplicativeExpression(i);
+  switch (tokens[i].type) {
+  case tokenizer::TokenType::OP_ADDITION: {
+    ASTNode addexp(NodeType::BINARY_OPERATION);
+    addexp.children.push_back(pre);
+    i++;
+    addexp.children.push_back(NodeType::BIN_OP_ADDITION);
+    ASTNode post = ParseMultiplicativeExpression(i);
+    addexp.children.push_back(post);
+  }
+  case tokenizer::TokenType::OP_SUBTRACT: {
+    ASTNode addexp(NodeType::BINARY_OPERATION);
+    addexp.children.push_back(pre);
+    i++;
+    addexp.children.push_back(NodeType::BIN_OP_SUBTRACT);
+    ASTNode post = ParseMultiplicativeExpression(i);
+    addexp.children.push_back(post);
+  }
+  default:
+    return pre;
+  }
+}
+
+ASTNode Parser::ParseMultiplicativeExpression(size_t &i) {
+  ASTNode pre = ParseUnaryExpression(i);
+  switch (tokens[i].type) {
+  case tokenizer::TokenType::OP_MULTIPLY: {
+    ASTNode multexp(NodeType::BINARY_OPERATION);
+    multexp.children.push_back(pre);
+    i++;
+    multexp.children.push_back(NodeType::BIN_OP_MULTIPLY);
+    ASTNode post = ParseMultiplicativeExpression(i);
+    multexp.children.push_back(post);
+  }
+  case tokenizer::TokenType::OP_DIVIDE: {
+    ASTNode multexp(NodeType::BINARY_OPERATION);
+    multexp.children.push_back(pre);
+    i++;
+    multexp.children.push_back(NodeType::BIN_OP_DIVIDE);
+    ASTNode post = ParseMultiplicativeExpression(i);
+    multexp.children.push_back(post);
+  }
+  default:
+    return pre;
+  }
+}
+
+ASTNode Parser::ParseUnaryExpression(size_t &i) {
+  switch (tokens[i].type) {
+  case tokenizer::TokenType::OP_ADDITION: {
+    i++;
+    ASTNode unexp(NodeType::UNARY_OPERATION);
+    unexp.children.push_back(NodeType::UN_OP_POS);
+    ASTNode term = ParseTerm(i);
+    unexp.children.push_back(term);
+    return unexp;
+  }
+  case tokenizer::TokenType::OP_SUBTRACT: {
+    i++;
+    ASTNode unexp(NodeType::UNARY_OPERATION);
+    unexp.children.push_back(NodeType::UN_OP_SUBTRACT);
+    ASTNode term = ParseTerm(i);
+    unexp.children.push_back(term);
+    return unexp;
+  }
+  case tokenizer::TokenType::OP_NOT: {
+    i++;
+    ASTNode unexp(NodeType::UNARY_OPERATION);
+    unexp.children.push_back(NodeType::UN_OP_NOT);
+    ASTNode term = ParseTerm(i);
+    unexp.children.push_back(term);
+    return unexp;
+  }
+  default:
+    return ParseTerm(i);
+  }
+}
+
+ASTNode Parser::ParseTerm(size_t &i) {
+  switch (tokens[i].type) {
+  case tokenizer::TokenType::LITERAL_INT: {
+    ASTNode lit(NodeType::LITERAL_INT, tokens[i].value);
+    i++;
+    return lit;
+  }
+  case tokenizer::TokenType::LITERAL_FLOAT: {
+    ASTNode lit(NodeType::LITERAL_FLOAT, tokens[i].value);
+    i++;
+    return lit;
+  }
+  case tokenizer::TokenType::LITERAL_STRING: {
+    ASTNode lit(NodeType::LITERAL_STRING, tokens[i].value);
+    i++;
+    return lit;
+  }
+  default:
+    return ParseColumnRef(i);
+  }
+}
+
+ASTNode Parser::ParseColumnConstraint(size_t &i) {
+  switch (tokens[i].type) {
+  case tokenizer::TokenType::OP_NOT: {
+    i++;
+    if (tokens[i].type != tokenizer::TokenType::KEYWORD_NULL)
+      throw UnexpectedToken(tokens[i]);
+    i++;
+    return ASTNode(NodeType::CONSTRAINT_NOT_NULL);
+  }
+  case tokenizer::TokenType::KEYWORD_UNIQUE: {
+    i++;
+    return ASTNode(NodeType::CONSTRAINT_UNIQUE);
+  }
+  case tokenizer::TokenType::KEYWORD_PRIMARY: {
+    i++;
+    if (tokens[i].type != tokenizer::TokenType::KEYWORD_KEY)
+      throw UnexpectedToken(tokens[i]);
+    i++;
+    return ASTNode(NodeType::CONSTRAINT_PRIMARY_KEY);
+  }
+  case tokenizer::TokenType::KEYWORD_DEFAULT: {
+    i++;
+    ASTNode constraint(NodeType::CONSTRAINT_DEFAULT);
+    ASTNode val = ParseValue(i);
+    constraint.children.push_back(val);
+    return constraint;
+  }
+  default:
+    throw UnexpectedToken(tokens[i]);
+  }
+}
+
+ASTNode Parser::ParseTableElement(size_t &i) {
+  switch (tokens[i].type) {
+  case tokenizer::TokenType::IDENTIFIER: {
+    return ParseColumnDef(i);
+  }
+  case tokenizer::TokenType::KEYWORD_CONSTRAINT: {
+    i++;
+    return ParseColumnConstraint(i);
+  }
+  default:
+    throw UnexpectedToken(tokens[i]);
+  }
+}
+
+ASTNode Parser::ParseConstraintType(size_t &i) {
+  switch (tokens[i].type) {
+  case tokenizer::TokenType::KEYWORD_PRIMARY: {
+    ASTNode constraintType(NodeType::CONSTRAINT_PRIMARY_KEY);
+    i++;
+    if (tokens[i].type != tokenizer::TokenType::KEYWORD_KEY)
+      throw UnexpectedToken(tokens[i]);
+    i++;
+    if (tokens[i].type != tokenizer::TokenType::PUNC_PAREN_OPEN)
+      throw UnexpectedToken(tokens[i]);
+    i++;
+    ASTNode colList = ParseColumnList(i);
+    if (tokens[i].type != tokenizer::TokenType::PUNC_PAREN_CLOSE)
+      throw UnexpectedToken(tokens[i]);
+    i++;
+    constraintType.children.push_back(colList);
+    return constraintType;
+  }
+  case tokenizer::TokenType::KEYWORD_FOREIGN: {
+    ASTNode constraintType(NodeType::CONSTRAINT_FOREIGN_KEY);
+    i++;
+    if (tokens[i].type != tokenizer::TokenType::KEYWORD_KEY)
+      throw UnexpectedToken(tokens[i]);
+    i++;
+    if (tokens[i].type != tokenizer::TokenType::PUNC_PAREN_OPEN)
+      throw UnexpectedToken(tokens[i]);
+    i++;
+    ASTNode colList = ParseColumnList(i);
+    if (tokens[i].type != tokenizer::TokenType::PUNC_PAREN_CLOSE)
+      throw UnexpectedToken(tokens[i]);
+    i++;
+    constraintType.children.push_back(colList);
+    if (tokens[i].type != tokenizer::TokenType::KEYWORD_REFERENCES)
+      throw UnexpectedToken(tokens[i]);
+    i++;
+    ASTNode tableRef = ParseTableRef(i);
+    constraintType.children.push_back(tableRef);
+    if (tokens[i].type != tokenizer::TokenType::PUNC_PAREN_OPEN)
+      throw UnexpectedToken(tokens[i]);
+    i++;
+    ASTNode refList = ParseColumnList(i);
+    if (tokens[i].type != tokenizer::TokenType::PUNC_PAREN_CLOSE)
+      throw UnexpectedToken(tokens[i]);
+    i++;
+    constraintType.children.push_back(refList);
+    return constraintType;
+  }
+  case tokenizer::TokenType::KEYWORD_UNIQUE: {
+    ASTNode constraintType(NodeType::CONSTRAINT_UNIQUE);
+    i++;
+    if (tokens[i].type != tokenizer::TokenType::PUNC_PAREN_OPEN)
+      throw UnexpectedToken(tokens[i]);
+    i++;
+    ASTNode colList = ParseColumnList(i);
+    if (tokens[i].type != tokenizer::TokenType::PUNC_PAREN_CLOSE)
+      throw UnexpectedToken(tokens[i]);
+    i++;
+    constraintType.children.push_back(colList);
+    return constraintType;
+  }
+  default:
+    throw UnexpectedToken(tokens[i]);
+  }
+}
 
 } // namespace parser

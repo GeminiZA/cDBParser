@@ -34,12 +34,17 @@ private:
   ASTNode ParseColumnConstraintsList(size_t &i);
   ASTNode ParseTableElementsList(size_t &i);
   ASTNode ParseAddDefinition(size_t &i);
+  ASTNode ParseConstraintDef(size_t &i);
   ASTNode ParseDataType(size_t &i);
   ASTNode ParseLogicalExpression(size_t &i);
-  ASTNode ParseComparisionExpression(size_t &i);
+  ASTNode ParseComparisonExpression(size_t &i);
   ASTNode ParseAdditiveExpression(size_t &i);
   ASTNode ParseMultiplicativeExpression(size_t &i);
   ASTNode ParseUnaryExpression(size_t &i);
+  ASTNode ParseTerm(size_t &i);
+  ASTNode ParseColumnConstraint(size_t &i);
+  ASTNode ParseTableElement(size_t &i);
+  ASTNode ParseConstraintType(size_t &i);
 
 public:
   Parser(std::vector<tokenizer::Token> tokens);
