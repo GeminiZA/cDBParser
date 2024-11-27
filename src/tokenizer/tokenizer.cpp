@@ -2,6 +2,7 @@
 #include "tokens.h"
 #include <algorithm>
 #include <cctype>
+#include <iostream>
 #include <stdexcept>
 #include <string>
 #include <strings.h>

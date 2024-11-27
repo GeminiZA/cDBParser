@@ -1,10 +1,9 @@
 #pragma once
 
 #include "tokens.h"
-#include <exception>
-#include <iostream>
+#include <stdexcept>
 
 namespace parser {
-std::exception UnexpectedToken(tokenizer::Token);
-std::exception ParseError(tokenizer::Token, std::string location);
+std::runtime_error UnexpectedToken(tokenizer::Token, std::string location);
+std::runtime_error ParseError(tokenizer::Token, std::string location);
 } // namespace parser

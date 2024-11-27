@@ -16,4 +16,4 @@ add_library(cDBParser ${SOURCES} ${PARSER_SOURCES} ${TOKENIZER_SOURCES})
 
 add_subdirectory(tests)
 
-add_executable(cDBMainTest ${SOURCES})
+add_executable(cDBMainTest ${SOURCES} ${PARSER_SOURCES} ${TOKENIZER_SOURCES})
